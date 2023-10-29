@@ -2,12 +2,15 @@
 Author: BigCiLeng && bigcileng@outlook.com
 Date: 2023-10-29 16:47:19
 LastEditors: BigCiLeng && bigcileng@outlook.com
-LastEditTime: 2023-10-29 16:47:42
+LastEditTime: 2023-10-29 19:00:59
 FilePath: /cuda_cxx_extension/interpolation.py
 Description: 
 
 Copyright (c) 2023 by bigcileng@outlook.com, All Rights Reserved. 
 '''
+import cppcuda_tutorial
+import torch
+
 def trilinear_interpolation_py(feats, points):
     """
     Inputs:
@@ -35,3 +38,19 @@ def trilinear_interpolation_py(feats, points):
                           d*feats[:, 7])
     
     return feats_interp
+
+class Trilinear_interpolation_cuda(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, feats, points):
+        feat_interp = cppcuda_tutorial.trilinear_interpolation(feats, points)
+
+        ctx.save_for_backward(feats, points)
+
+        return feat_interp
+    
+    @staticmethod
+    def backward(ctx, dL_dfeat_interp):
+        feats, points = ctx.saved_tensors
+
+        dL_dfeats = cppcuda_tutorial.trilinear_interpolation_backward(dL_dfeat_interp.contiguous(), feats, points)
+        return dL_dfeats, None
