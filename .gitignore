@@ -1,0 +1,3 @@
+__pycache__/*
+cppcuda_tutorial.egg-info/*
+build/*
